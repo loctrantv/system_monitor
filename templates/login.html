@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Server Monitor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-brand">
+                <div class="brand-icon"><i class="fas fa-server"></i></div>
+                <div class="brand-text">
+                    <h2>Server Monitor</h2>
+                    <p class="muted">Admin dashboard</p>
+                </div>
+            </div>
+
+            {% if error %}
+                <div class="login-error">{{ error }}</div>
+            {% endif %}
+
+            <form method="post" action="{{ url_for('login', next=request.args.get('next')) }}" class="login-form">
+                <div class="form-row">
+                    <label for="username">Username</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user"></i>
+                        <input id="username" name="username" type="text" placeholder="Username" autocomplete="username" required />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label for="password">Password</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock"></i>
+                        <input id="password" name="password" type="password" placeholder="Password" autocomplete="current-password" required />
+                    </div>
+                </div>
+                <div class="login-actions">
+                    <button type="submit" class="btn btn-primary">Sign in</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

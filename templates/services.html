@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Services Status{% endblock %}
+
+{% block header %}Services Status{% endblock %}
+
+{% block content %}
+
+            <!-- Services Grid -->
+            <div class="services-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-cogs"></i>
+                        <h2>System Services</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="services-controls">
+                            <button class="refresh-btn" onclick="fetchServices()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                        <div id="services-list" class="services-list-full"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/services.js') }}"></script>
+{% endblock %}

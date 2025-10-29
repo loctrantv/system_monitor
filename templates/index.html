@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Server Monitor - Dashboard{% endblock %}
+
+{% block head %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Flatpickr datepicker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+{% endblock %}
+
+{% block header %}System Overview{% endblock %}
+
+{% block header_info %}
+    <div class="server-info">
+        <span id="server-hostname"></span>
+        <span id="server-uptime"></span>
+    </div>
+{% endblock %}
+
+{% block content %}
+
+            <!-- System Status Overview -->
+            <div class="sys-status">
+                <div class="status-card">
+                    <div class="status-header">Load status</div>
+                    <div class="status-chart">
+                        <canvas id="loadStatusChart"></canvas>
+                        <div class="status-value">
+                            <span class="value">0</span>%
+                        </div>
+                    </div>
+                    <div class="status-detail">Smooth operation</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-header">CPU usage</div>
+                    <div class="status-chart">
+                        <canvas id="cpuStatusChart"></canvas>
+                        <div class="status-value">
+                            <span class="value">0</span>%
+                        </div>
+                    </div>
+                    <div class="status-detail">4 Core(s)</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-header">RAM usage</div>
+                    <div class="status-chart">
+                        <canvas id="ramStatusChart"></canvas>
+                        <div class="status-value">
+                            <span class="value">0</span>%
+                        </div>
+                    </div>
+                    <div class="status-detail">0 / 0MB</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-header">Disk usage</div>
+                    <div class="status-chart">
+                        <canvas id="diskStatusChart"></canvas>
+                        <div class="status-value">
+                            <span class="value">0</span>%
+                        </div>
+                    </div>
+                    <div class="status-detail">0G / 0G</div>
+                </div>
+            </div>
+
+            <!-- Global time filter removed - defaulting to Today; use per-card presets or Custom -->
+
+            <!-- Top Load Average area (full width) -->
+            <div class="card large" style="margin-bottom: 18px;">
+                <div class="card-header">
+                    <i class="fas fa-chart-area"></i>
+                    <h2>Load Average</h2>
+                    <div class="range-buttons">
+                        <button class="preset" data-range="yesterday">Yesterday</button>
+                        <button class="preset active" data-range="today">Today</button>
+                        <button class="preset" data-range="7d">Last 7 days</button>
+                        <button class="preset" data-range="custom">Custom</button>
+                    </div>
+                    <div class="custom-range" style="display:none; margin-left: 12px;">
+                        <input type="date" class="card-start" />
+                        <input type="date" class="card-end" />
+                        <button class="apply-custom">OK</button>
+                        <button class="cancel-custom">Cancel</button>
+                    </div>
+                </div>
+                <div class="card-body load-row">
+                    <div class="load-left">
+                        <canvas id="loadLeftChart"></canvas>
+                    </div>
+                    <div class="load-right">
+                        <canvas id="loadRightChart"></canvas>
+                    </div>
+                </div>
+            
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- CPU Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-microchip"></i>
+                        <h2>CPU Usage</h2>
+                        <div class="range-buttons small">
+                            <button class="preset" data-range="yesterday">Yesterday</button>
+                            <button class="preset active" data-range="today">Today</button>
+                            <button class="preset" data-range="7d">Last 7 days</button>
+                            <button class="preset" data-range="custom">Custom</button>
+                        </div>
+                        <div class="custom-range" style="display:none; margin-left: 8px;">
+                            <input type="date" class="card-start" />
+                            <input type="date" class="card-end" />
+                            <button class="apply-custom">OK</button>
+                            <button class="cancel-custom">Cancel</button>
+                        </div>
+                    </div>
+                    <div class="card-body chart">
+                        <canvas id="cpuChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Memory Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-memory"></i>
+                        <h2>Memory Usage</h2>
+                        <div class="range-buttons small">
+                            <button class="preset" data-range="yesterday">Yesterday</button>
+                            <button class="preset active" data-range="today">Today</button>
+                            <button class="preset" data-range="7d">Last 7 days</button>
+                            <button class="preset" data-range="custom">Custom</button>
+                        </div>
+                        <div class="custom-range" style="display:none; margin-left: 8px;">
+                            <input type="date" class="card-start" />
+                            <input type="date" class="card-end" />
+                            <button class="apply-custom">OK</button>
+                            <button class="cancel-custom">Cancel</button>
+                        </div>
+                    </div>
+                    <div class="card-body chart">
+                        <canvas id="memoryChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Disk Usage Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-hdd"></i>
+                        <h2>Disk Usage</h2>
+                    </div>
+                    <div class="card-body chart">
+                        <div id="disk-usage"></div>
+                    </div>
+                </div>
+
+                <!-- Network Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-network-wired"></i>
+                        <h2>Network Traffic</h2>
+                    </div>
+                    <div class="card-body chart">
+                        <canvas id="networkChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,20 @@
+{
+    "server": {
+        "hostname": "your_ubuntu_server_ip",
+        "username": "your_username",
+        "password": "your_password"
+    },
+    "monitoring": {
+        "interval": 60,
+        "services": [
+            "nginx",
+            "apache2",
+            "mysql",
+            "postgresql",
+            "mongodb",
+            "redis-server",
+            "ssh",
+            "ufw"
+        ]
+    }
+}

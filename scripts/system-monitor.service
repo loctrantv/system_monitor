@@ -1,0 +1,16 @@
+[Unit]
+Description=System Monitor Web UI (local)
+After=network.target
+
+[Service]
+Type=simple
+User=monitor
+Group=monitor
+WorkingDirectory=/opt/system-monitor
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/system-monitor/venv/bin/python /opt/system-monitor/app.py
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
