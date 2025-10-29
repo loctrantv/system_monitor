@@ -30,7 +30,6 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 # Update & install system packages
-apt-get update -y
 apt-get install -y python3 python3-venv python3-pip ufw
 
 # Create virtualenv and install requirements
