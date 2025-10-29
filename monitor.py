@@ -245,84 +245,88 @@ class SystemMonitor:
         }
 
     def get_service_status(self):
-        """Get status of important services"""
-        if not self.ssh:
-            return {}
-            
+        """Get status of important services and include Python-run processes.
+
+        Returns a mapping of service name -> status string (e.g. 'active', 'inactive', 'running').
+        System services are queried via `systemctl is-active`. Additionally the function
+        scans local processes for Python-based runners (gunicorn, uwsgi, uvicorn, python)
+        and adds them to the returned mapping as `<script> (pid <n>)`: 'active'.
+
+        Note: Python process detection is local only. If the monitor is connected to a
+        remote host via SSH (`self.ssh`), systemctl checks will run remotely but Python
+        process detection will still reflect the local host where this code runs.
+        """
         important_services = [
             'nginx', 'apache2', 'mysql', 'postgresql',
             'mongodb', 'redis-server', 'ssh', 'ufw'
         ]
-        
+
         services_status = {}
+
+        # Check system services (remote via SSH if configured)
         for service in important_services:
             cmd = f"systemctl is-active {service}"
-            status = self.execute_command(cmd)
-            if status:
-                services_status[service] = status.strip()
-            
-        return services_status
+            try:
+                if self.ssh:
+                    out = self.execute_command(cmd)
+                else:
+                    proc = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+                    out = proc.stdout
+                if out:
+                    services_status[service] = out.strip()
+            except Exception:
+                services_status[service] = 'unknown'
 
-        """Get overall system health status with detailed metrics"""
+        # Detect local Python processes and include them
         try:
-            # Get comprehensive load status
-            load_status = self.load_analyzer.calculate_system_load()
+            services_status_local = {}
+            for proc in psutil.process_iter(['pid', 'name', 'cmdline', 'username']):
+                info = proc.info
+                name = (info.get('name') or '').lower()
+                cmdline = info.get('cmdline') or []
+
+                is_python = False
+                if any(k in name for k in ('python', 'gunicorn', 'uwsgi', 'uvicorn')):
+                    is_python = True
+                else:
+                    for part in cmdline:
+                        try:
+                            if part and 'python' in str(part).lower():
+                                is_python = True
+                                break
+                        except Exception:
+                            continue
+
+                if not is_python:
+                    continue
+
+                # derive a friendly name (script or entry)
+                script = None
+                for part in cmdline:
+                    if part.endswith('.py') or part.endswith(':app'):
+                        script = part
+                        break
+                if not script and len(cmdline) > 0:
+                    # fallback to the process name
+                    script = name or f'python-{info.get("pid")}'
+
+                if script not in services_status_local:
+                    services_status_local[script] = []
+                
+                services_status_local[script].append(info.get('pid'))
+                # mark as active for compatibility with front-end
             
-            # Get CPU status
-            cpu_percent = psutil.cpu_percent(interval=None)
-            cpu_count = psutil.cpu_count()
-            cpu_freq = psutil.cpu_freq()
-            
-            # Get memory status
-            memory = psutil.virtual_memory()
-            swap = psutil.swap_memory()
-            
-            # Get disk status
-            disk = psutil.disk_usage('/')
-            
-            # Get system uptime
-            uptime = time.time() - psutil.boot_time()
-            
-            return {
-                'status': {
-                    'load': load_status['total'],
-                    'message': load_status['message'],
-                    'health_score': round((100 - load_status['total']) * 0.8 + (100 - memory.percent) * 0.2, 1)
-                },
-                'components': {
-                    'cpu': {
-                        'usage': cpu_percent,
-                        'cores': cpu_count,
-                        'frequency': {
-                            'current': cpu_freq.current if cpu_freq else 0,
-                            'max': cpu_freq.max if cpu_freq else 0
-                        }
-                    },
-                    'memory': {
-                        'used': memory.used,
-                        'total': memory.total,
-                        'percent': memory.percent,
-                        'swap_percent': swap.percent
-                    },
-                    'disk': {
-                        'used': disk.used,
-                        'total': disk.total,
-                        'percent': disk.percent
-                    },
-                    'load_details': load_status['components']
-                },
-                'uptime': {
-                    'seconds': uptime,
-                    'formatted': '{:0>2}:{:0>2}:{:0>2}'.format(
-                        int(uptime // 3600),
-                        int((uptime % 3600) // 60),
-                        int(uptime % 60)
-                    )
-                }
-            }
-        except Exception as e:
-            print(f"Error getting system health: {e}")
-            return None
+            for script, pids in services_status_local.items():
+                key = f"{script} ({len(pids)} processing)"
+                services_status[key] = 'active'
+        except Exception:
+            # swallow errors during process iteration
+            pass
+        sorted_by_status = dict(sorted(
+            services_status.items(),
+            key=lambda x: (x[1] == "active")
+        ))
+        return sorted_by_status
 
     def get_history(self, start_ts=None, end_ts=None):
         """Return snapshots between start_ts and end_ts.

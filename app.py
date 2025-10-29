@@ -11,7 +11,7 @@ app.secret_key = os.environ.get('DASH_SECRET_KEY', 'change-this-secret')
 
 # simple credentials: override with environment variables DASH_USER / DASH_PASS
 WEB_USER = os.environ.get('DASH_USER', 'admin')
-WEB_PASS = os.environ.get('DASH_PASS', 'Minhloc1@')
+WEB_PASS = os.environ.get('DASH_PASS', 'admin')
 
 monitor = SystemMonitor()
 

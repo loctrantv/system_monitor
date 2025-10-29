@@ -75,7 +75,7 @@ async function controlService(service, action) {
 
 // Initial load
 document.addEventListener('DOMContentLoaded', () => {
-    fetchServices();
+    setTimeout(fetchServices, 500);  // slight delay to ensure DOM is ready
     // Refresh every 30 seconds
     setInterval(fetchServices, 30000);
 });
