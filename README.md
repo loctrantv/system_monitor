@@ -4,6 +4,10 @@ Lightweight server monitoring and service management web UI built with Flask and
 
 This repository provides a simple dashboard to view CPU / memory / disk / network statistics, history sampling, and a services management page. It was designed to be installed on Ubuntu servers but should run on any Linux system with Python 3 and the required packages.
 
+Demo
+----
+![System Monitor demo](demo.png)
+
 Contents
 --------
 - `app.py` - Flask application entrypoint (serves API and UI).
