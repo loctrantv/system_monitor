@@ -31,25 +31,7 @@ fi
 
 # Update & install system packages
 apt-get update -y
-apt-get install -y python3 python3-venv python3-pip git ufw
-
-# Create system user
-if ! id -u monitor >/dev/null 2>&1; then
-  useradd --system --create-home --home-dir /var/lib/monitor -s /usr/sbin/nologin monitor
-  echo "Created system user 'monitor'"
-fi
-
-# Prepare destination directory
-if [ -n "$REPO" ]; then
-  rm -rf "$DEST_DIR"
-  git clone "$REPO" "$DEST_DIR"
-  chown -R monitor:monitor "$DEST_DIR"
-else
-  # assume current dir contains project, copy it
-  mkdir -p "$DEST_DIR"
-  rsync -a --exclude ".git" "$(pwd)/" "$DEST_DIR/"
-  chown -R monitor:monitor "$DEST_DIR"
-fi
+apt-get install -y python3 python3-venv python3-pip ufw
 
 # Create virtualenv and install requirements
 python3 -m venv "$DEST_DIR/venv"
@@ -74,8 +56,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=monitor
-Group=monitor
+User=root
+Group=root
 WorkingDirectory=${DEST_DIR}
 Environment=PYTHONUNBUFFERED=1
 ExecStart=${DEST_DIR}/venv/bin/python ${DEST_DIR}/app.py
