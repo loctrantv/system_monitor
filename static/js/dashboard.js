@@ -2,7 +2,7 @@
 let cpuChart, memoryChart, networkChart;
 let loadLeftChart, loadRightChart, overviewChart;
 let loadStatusChart, cpuStatusChart, ramStatusChart, diskStatusChart;
-
+let range = 'today';
 // Options for doughnut charts (status)
 const doughnutOptions = {
     responsive: true,
@@ -391,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // wire per-card preset buttons
     document.querySelectorAll('.card-header .range-buttons .preset').forEach(btn => {
         btn.addEventListener('click', async (ev) => {
-            const range = btn.dataset.range;
+            range = btn.dataset.range;
             // set active class for siblings
             const parent = btn.parentElement;
             parent.querySelectorAll('.preset').forEach(b=>b.classList.remove('active'));
@@ -412,14 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 return;
             }
-
-            if (card.classList.contains('large')) {
-                await fetchHistoryFor(range, 'top');
-            } else if (card.querySelector('#cpuChart')) {
-                await fetchHistoryFor(range, 'cpu');
-            } else if (card.querySelector('#memoryChart')) {
-                await fetchHistoryFor(range, 'memory');
-            }
+            await fetchHistory({ range: range});
         });
     });
 
@@ -428,6 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const applyBtn = block.querySelector('.apply-custom');
         const cancelBtn = block.querySelector('.cancel-custom');
         applyBtn && applyBtn.addEventListener('click', async (ev) => {
+            range = 'custom';
             const card = block.closest('.card');
             const start = block.querySelector('.card-start').value;
             const end = block.querySelector('.card-end').value;
@@ -435,25 +429,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const startIso = start + 'T00:00:00Z';
             const endIso = end + 'T23:59:59Z';
             // determine target
-            if (card.classList.contains('large')) {
-                await fetchHistoryFor(null, 'top', startIso, endIso);
-            } else if (card.querySelector('#cpuChart')) {
-                await fetchHistoryFor(null, 'cpu', startIso, endIso);
-            } else if (card.querySelector('#memoryChart')) {
-                await fetchHistoryFor(null, 'memory', startIso, endIso);
-            } else {
-                await fetchHistory({ start: startIso, end: endIso });
-            }
+            await fetchHistory({ start: startIso, end: endIso });
             block.style.display = 'none';
         });
         cancelBtn && cancelBtn.addEventListener('click', (ev) => { block.style.display = 'none'; });
     });
 
     // initial load: Today by default
-    fetchHistory({ range: 'today' });
+    fetchHistory({ range: range });
 
     // refresh periodically (refresh history for 'today')
-    setInterval(() => fetchHistory({ range: 'today' }), 5000);
+    setInterval(() => {
+    if (range === 'today') {
+            fetchHistory({ range: range })
+        }
+    }, 5000);
     fetchLatestStats()
     // refresh services/disk in background more often
     setInterval(fetchLatestStats, 5000);
