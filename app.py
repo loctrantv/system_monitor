@@ -58,8 +58,7 @@ def get_stats():
         'cpu': monitor.get_cpu_info(),
         'memory': monitor.get_memory_info(),
         'disk': monitor.get_disk_info(),
-        'network': monitor.get_network_info(),
-        'services': monitor.get_service_status()
+        'network': monitor.get_network_info()
     })
 
 

@@ -94,14 +94,15 @@ class SystemMonitor:
             for partition in partitions:
                 try:
                     usage = psutil.disk_usage(partition.mountpoint)
-                    disk_info[partition.mountpoint] = {
-                        'device': partition.device,
-                        'total': usage.total,
-                        'used': usage.used,
-                        'free': usage.free,
-                        'percent': usage.percent,
-                        'fstype': partition.fstype
-                    }
+                    if partition.fstype != 'squashfs':
+                        disk_info[partition.mountpoint] = {
+                            'device': partition.device,
+                            'total': usage.total,
+                            'used': usage.used,
+                            'free': usage.free,
+                            'percent': usage.percent,
+                            'fstype': partition.fstype
+                        }
                 except Exception:
                     continue
 
@@ -173,14 +174,14 @@ class SystemMonitor:
     def get_cpu_info(self):
         """Get CPU information"""
         # return latest snapshot cpu data if available
-        if self.history:
-            return self.history[-1]['cpu']
+        # if self.history:
+        #     return self.history[-1]['cpu']
         # fallback
         cpu_percent = psutil.cpu_percent(interval=1, percpu=True)
         cpu_freq = psutil.cpu_freq()
         return {
-            'usage_per_cpu': cpu_percent,
-            'avg_usage': sum(cpu_percent) / len(cpu_percent) if cpu_percent else 0.0,
+            'percpu': cpu_percent,
+            'avg': sum(cpu_percent) / len(cpu_percent) if cpu_percent else 0.0,
             'frequency': {
                 'current': cpu_freq.current if cpu_freq else None,
                 'min': cpu_freq.min if cpu_freq else None,
@@ -192,8 +193,8 @@ class SystemMonitor:
 
     def get_memory_info(self):
         """Get memory information"""
-        if self.history:
-            return self.history[-1]['memory']
+        # if self.history:
+        #     return self.history[-1]['memory']
         mem = psutil.virtual_memory()
         swap = psutil.swap_memory()
         return {
@@ -218,27 +219,28 @@ class SystemMonitor:
         for partition in partitions:
             try:
                 usage = psutil.disk_usage(partition.mountpoint)
-                disk_info[partition.mountpoint] = {
-                    'device': partition.device,
-                    'total': usage.total,
-                    'used': usage.used,
-                    'free': usage.free,
-                    'percent': usage.percent,
-                    'fstype': partition.fstype
-                }
+                if partition.fstype != 'squashfs':
+                    disk_info[partition.mountpoint] = {
+                        'device': partition.device,
+                        'total': usage.total,
+                        'used': usage.used,
+                        'free': usage.free,
+                        'percent': usage.percent,
+                        'fstype': partition.fstype
+                    }
             except:
                 continue
         return disk_info
 
     def get_network_info(self):
         """Get network information"""
-        if self.history:
-            return self.history[-1]['net']
+        # if self.history:
+        #     return self.history[-1]['net']
         net_io = psutil.net_io_counters()
         net_connections = len(psutil.net_connections())
         return {
-            'bytes_sent': net_io.bytes_sent,
-            'bytes_recv': net_io.bytes_recv,
+            'bytes_sent': round(net_io.bytes_sent / (1024*1024), 4),
+            'bytes_recv': round(net_io.bytes_recv / (1024*1024), 4),
             'packets_sent': net_io.packets_sent,
             'packets_recv': net_io.packets_recv,
             'active_connections': net_connections

@@ -323,6 +323,7 @@ async function fetchLatestStats() {
 
         // Update system health status chart
         if (loadStatusChart && d.cpu) {
+            console.log('Updating load status chart with CPU avg:', d.cpu);
             loadStatusChart.data.datasets[0].data = [d.cpu.avg || 0, 100 - (d.cpu.avg || 0)];
             loadStatusChart.update();
             document.querySelector('.status-card:nth-child(1) .status-value .value').textContent = Math.round(d.cpu.avg || 0);
