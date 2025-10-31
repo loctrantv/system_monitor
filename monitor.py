@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 
 
 class SystemMonitor:
-    def __init__(self, sample_interval=5, max_days=7, storage_path='monitor.db', persist=True):
+    def __init__(self, sample_interval=60, max_days=7, storage_path='monitor.db', persist=True):
         """Create monitor, start background sampler.
         sample_interval: sampling interval in seconds (default 5s)
         max_days: how many days of history to keep (default 7 days)

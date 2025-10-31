@@ -443,7 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (range === 'today') {
             fetchHistory({ range: range })
         }
-    }, 5000);
+    }, 60000);
     fetchLatestStats()
     // refresh services/disk in background more often
     setInterval(fetchLatestStats, 5000);
